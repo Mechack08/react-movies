@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const Card = ({ movie }) => {
   const dateFormater = (date) => {
@@ -74,6 +74,48 @@ const Card = ({ movie }) => {
     return genreArray.map((genre) => <li key={genre}>{genre}</li>);
   };
 
+  const [btnName, setbtnName] = useState("");
+
+  const addStorage = () => {
+    let storedData = window.localStorage.movies
+      ? window.localStorage.movies.split(",")
+      : [];
+
+    if (!storedData.includes(movie.id.toString())) {
+      storedData.push(movie.id);
+      window.localStorage.movies = storedData;
+    }
+  };
+
+  const removeStorage = () => {
+    let storedData = window.localStorage.movies;
+    if (window.localStorage.movies) {
+      const newArray = storedData.split(",");
+      if (newArray.includes(movie.id.toString())) {
+        const filteredArray = newArray.filter((id) => {
+          return id !== movie.id.toString();
+        });
+        window.localStorage.movies = filteredArray;
+        console.log(filteredArray);
+      }
+    }
+  };
+
+  const existStorage = (id) => {
+    let storedData = window.localStorage.movies;
+    if (storedData.split(",").includes(id.toString())) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    existStorage(movie.id)
+      ? setbtnName("Retirer au coup de coeur")
+      : setbtnName("Ajouter au coup de coeur");
+  }, [movie.id]);
+
   return (
     <div className="card">
       <img
@@ -107,7 +149,15 @@ const Card = ({ movie }) => {
       {movie.overview && <h3>Synopsis</h3>}
       {movie.overview && <p>{movie.overview}</p>}
 
-      <div className="btn">Ajouter au coup de coeur</div>
+      {btnName === "Retirer au coup de coeur" ? (
+        <div className="btn" onClick={() => removeStorage()}>
+          {btnName}
+        </div>
+      ) : (
+        <div className="btn" onClick={() => addStorage()}>
+          {btnName}
+        </div>
+      )}
     </div>
   );
 };
