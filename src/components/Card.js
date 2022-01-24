@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addCoupDeCoeur } from "../actions/heart.action";
 
-const Card = ({ movie }) => {
+const Card = ({ movie, locals }) => {
   const dateFormater = (date) => {
     let [yyyy, mm, dd] = date.split("-");
     return [dd, mm, yyyy].join("/");
@@ -74,18 +76,24 @@ const Card = ({ movie }) => {
     return genreArray.map((genre) => <li key={genre}>{genre}</li>);
   };
 
+  const [btnStatus, setBtnStatus] = useState(false);
   const [btnName, setbtnName] = useState("");
+  const dispatch = useDispatch();
 
-  const addStorage = () => {
-    let storedData = window.localStorage.movies
-      ? window.localStorage.movies.split(",")
-      : [];
-
-    if (!storedData.includes(movie.id.toString())) {
-      storedData.push(movie.id);
-      window.localStorage.movies = storedData;
-    }
+  const addStorage = async () => {
+    await dispatch(addCoupDeCoeur(movie.id.toString()));
   };
+
+  useEffect(() => {
+    if (locals.includes(movie.id.toString())) {
+      setBtnStatus(true);
+    } else {
+      setBtnStatus(false);
+    }
+    btnStatus
+      ? setbtnName("Retirer au coup de coeur")
+      : setbtnName("Ajouter au coup de coeur");
+  }, [btnStatus, locals, movie.id]);
 
   const removeStorage = () => {
     let storedData = window.localStorage.movies;
@@ -100,21 +108,6 @@ const Card = ({ movie }) => {
       }
     }
   };
-
-  const existStorage = (id) => {
-    let storedData = window.localStorage.movies;
-    if (storedData.split(",").includes(id.toString())) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  useEffect(() => {
-    existStorage(movie.id)
-      ? setbtnName("Retirer au coup de coeur")
-      : setbtnName("Ajouter au coup de coeur");
-  }, [movie.id]);
 
   return (
     <div className="card">
@@ -149,12 +142,24 @@ const Card = ({ movie }) => {
       {movie.overview && <h3>Synopsis</h3>}
       {movie.overview && <p>{movie.overview}</p>}
 
-      {btnName === "Retirer au coup de coeur" ? (
-        <div className="btn" onClick={() => removeStorage()}>
+      {locals.includes(movie.id.toString()) ? (
+        <div
+          className="btn"
+          onClick={() => {
+            removeStorage();
+            setBtnStatus(true);
+          }}
+        >
           {btnName}
         </div>
       ) : (
-        <div className="btn" onClick={() => addStorage()}>
+        <div
+          className="btn"
+          onClick={() => {
+            addStorage();
+            setBtnStatus(false);
+          }}
+        >
           {btnName}
         </div>
       )}

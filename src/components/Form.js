@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Card from "./Card";
 
 const Form = () => {
@@ -7,12 +8,17 @@ const Form = () => {
   const [search, setSearch] = useState("all");
   const [sortGoodToBad, setSortGoodToBad] = useState(null);
 
+  const localsData = useSelector((state) => state.coupDeCoeurReducer);
+
   useEffect(() => {
-    axios
-      .get(
-        `https://api.themoviedb.org/3/search/movie?api_key=aade29541dfd790dd62148b7224f262a&query=${search}&language=fr-FR`
-      )
-      .then((data) => setMoviesData(data.data.results));
+    const getData = async () => {
+      await axios
+        .get(
+          `https://api.themoviedb.org/3/search/movie?api_key=aade29541dfd790dd62148b7224f262a&query=${search}&language=fr-FR`
+        )
+        .then((data) => setMoviesData(data.data.results));
+    };
+    getData();
   }, [search]);
 
   return (
@@ -59,7 +65,7 @@ const Form = () => {
             }
           })
           .map((movie) => {
-            return <Card key={movie.id} movie={movie} />;
+            return <Card key={movie.id} movie={movie} locals={localsData} />;
           })}
       </div>
     </div>
